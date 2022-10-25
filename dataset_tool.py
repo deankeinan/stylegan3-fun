@@ -95,6 +95,7 @@ def open_image_folder(source_dir, force_channels: int = None, *, max_images: Opt
 
     max_idx = maybe_min(len(input_images), max_images)
 
+    
     def iterate_images():
         for idx, fname in enumerate(input_images):
             arch_fname = os.path.relpath(fname, source_dir)
@@ -106,7 +107,6 @@ def open_image_folder(source_dir, force_channels: int = None, *, max_images: Opt
                 if img.mode == 'L':
                     print("yo")
                     if convert_channels:
-                    
                         img = img.convert('RGB')
                 # Force the number of channels if so requested
                 if force_channels is not None:
@@ -147,8 +147,10 @@ def open_image_zip(source, force_channels: int = None, *, max_images: Optional[i
                     # Same as above: PR #39 by Andreas Jansson and turn Grayscale to RGB
                     try:
                         img = PIL.Image.open(file) # type: ignore
-                        if img.mode == 'L' and convert_channels:
-                            img = img.convert('RGB')
+                        if img.mode == 'L':
+                            print("yo")
+                            if convert_channels:
+                                img = img.convert('RGB')
                         # Force the number of channels if so requested
                         if force_channels is not None:
                             img = img.convert(gen_utils.channels_dict[force_channels])
