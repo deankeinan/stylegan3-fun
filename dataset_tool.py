@@ -148,8 +148,8 @@ def open_image_zip(source, force_channels: int = None, *, max_images: Optional[i
                     try:
                         img = PIL.Image.open(file) # type: ignore
                         if img.mode == 'L':
-                            print("yo")
                             if convert_channels:
+                                print("yo") 
                                 img = img.convert('RGB')
                         # Force the number of channels if so requested
                         if force_channels is not None:
