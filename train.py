@@ -313,9 +313,17 @@ def main(**kwargs):
         c.G_kwargs.conv_clamp = c.D_kwargs.conv_clamp = None
     if opts.nobench:
         c.cudnn_benchmark = False
-
+    desc_list = [
+        f"{opts.cfg:s}",
+        f"{dataset_name:s}",
+        f"batch{c.batch_size:d}",
+        f"gamma{c.loss_kwargs.r1_gamma:g}",
+        resume_desc
+    ]
+    if opts.freezed:
+        desc_list.append(f"freezed{opts.freezed:d}")
+    desc = "-".join(desc_list)
     # Description string.
-    desc = f'{opts.cfg:s}-{dataset_name:s}-gpus{c.num_gpus:d}-batch{c.batch_size:d}-gamma{c.loss_kwargs.r1_gamma:g}-{resume_desc}'
     if opts.desc is not None:
         desc += f'-{opts.desc}'
 

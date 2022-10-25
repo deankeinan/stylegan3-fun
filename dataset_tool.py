@@ -104,6 +104,7 @@ def open_image_folder(source_dir, force_channels: int = None, *, max_images: Opt
                 img = PIL.Image.open(fname)  # Let PIL handle the mode
                 # Convert grayscale image to RGB
                 if img.mode == 'L' and convert_channels:
+                    print("converting channels")
                     img = img.convert('RGB')
                 # Force the number of channels if so requested
                 if force_channels is not None:
