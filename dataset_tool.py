@@ -340,14 +340,14 @@ def open_dataset(source, force_channels, *, max_images: Optional[int],convert_ch
         if source.rstrip('/').endswith('_lmdb'):
             return open_lmdb(source, max_images=max_images)
         else:
-            return open_image_folder(source, force_channels, max_images=max_images,convert_channels=True)
+            return open_image_folder(source, force_channels, max_images=max_images,convert_channels=convert_channels)
     elif os.path.isfile(source):
         if os.path.basename(source) == 'cifar-10-python.tar.gz':
             return open_cifar10(source, max_images=max_images)
         elif os.path.basename(source) == 'train-images-idx3-ubyte.gz':
             return open_mnist(source, max_images=max_images)
         elif file_ext(source) == 'zip':
-            return open_image_zip(source, force_channels, max_images=max_images,convert_channels=True)
+            return open_image_zip(source, force_channels, max_images=max_images,convert_channels=convert_channels)
         else:
             assert False, 'unknown archive type'
     else:
