@@ -79,7 +79,7 @@ def is_image_ext(fname: Union[str, Path]) -> bool:
 # ----------------------------------------------------------------------------
 
 
-def open_image_folder(source_dir, force_channels: int = None, *, max_images: Optional[int]):
+def open_image_folder(source_dir, force_channels: int = None, *, max_images: Optional[int],convert_channels=True):
     input_images = [str(f) for f in sorted(Path(source_dir).rglob('*')) if is_image_ext(f) and os.path.isfile(f)]
 
     # Load labels.
@@ -103,7 +103,7 @@ def open_image_folder(source_dir, force_channels: int = None, *, max_images: Opt
             try:
                 img = PIL.Image.open(fname)  # Let PIL handle the mode
                 # Convert grayscale image to RGB
-                if img.mode == 'L':
+                if img.mode == 'L' and convert_channels:
                     img = img.convert('RGB')
                 # Force the number of channels if so requested
                 if force_channels is not None:
@@ -121,7 +121,7 @@ def open_image_folder(source_dir, force_channels: int = None, *, max_images: Opt
 # ----------------------------------------------------------------------------
 
 
-def open_image_zip(source, force_channels: int = None, *, max_images: Optional[int]):
+def open_image_zip(source, force_channels: int = None, *, max_images: Optional[int],convert_channels=True):
     with zipfile.ZipFile(source, mode='r') as z:
         input_images = [str(f) for f in sorted(z.namelist()) if is_image_ext(f)]
 
@@ -144,7 +144,7 @@ def open_image_zip(source, force_channels: int = None, *, max_images: Optional[i
                     # Same as above: PR #39 by Andreas Jansson and turn Grayscale to RGB
                     try:
                         img = PIL.Image.open(file) # type: ignore
-                        if img.mode == 'L':
+                        if img.mode == 'L' and convert_channels:
                             img = img.convert('RGB')
                         # Force the number of channels if so requested
                         if force_channels is not None:
@@ -330,19 +330,19 @@ def make_transform(
 # ----------------------------------------------------------------------------
 
 
-def open_dataset(source, force_channels, *, max_images: Optional[int]):
+def open_dataset(source, force_channels, *, max_images: Optional[int],convert_channels=True):
     if os.path.isdir(source):
         if source.rstrip('/').endswith('_lmdb'):
             return open_lmdb(source, max_images=max_images)
         else:
-            return open_image_folder(source, force_channels, max_images=max_images)
+            return open_image_folder(source, force_channels, max_images=max_images,convert_channels=True)
     elif os.path.isfile(source):
         if os.path.basename(source) == 'cifar-10-python.tar.gz':
             return open_cifar10(source, max_images=max_images)
         elif os.path.basename(source) == 'train-images-idx3-ubyte.gz':
             return open_mnist(source, max_images=max_images)
         elif file_ext(source) == 'zip':
-            return open_image_zip(source, force_channels, max_images=max_images)
+            return open_image_zip(source, force_channels, max_images=max_images,convert_channels=True)
         else:
             assert False, 'unknown archive type'
     else:
@@ -394,6 +394,7 @@ def open_dest(dest: str) -> Tuple[str, Callable[[str, Union[bytes, str]], None],
 @click.option('--force-channels', help='Force the number of channels in the image (1: grayscale, 3: RGB, 4: RGBA)', type=click.Choice(['1', '3', '4']), default=None)
 @click.option('--transform', help='Input crop/resize mode', type=click.Choice(['center-crop', 'center-crop-wide', 'center-crop-tall']))
 @click.option('--resolution', help='Output resolution (e.g., \'512x512\')', metavar='WxH', type=parse_tuple)
+@click.option('--convert-channels',help='Convert to RGB',default=True,type=bool)
 def convert_dataset(
     ctx: click.Context,
     source: str,
@@ -401,7 +402,8 @@ def convert_dataset(
     max_images: Optional[int],
     force_channels: Optional[int],
     transform: Optional[str],
-    resolution: Optional[Tuple[int, int]]
+    resolution: Optional[Tuple[int, int]],
+    convert_channels:bool
 ):
     """Convert an image dataset into a dataset archive usable with StyleGAN2 ADA PyTorch.
 
@@ -467,7 +469,7 @@ def convert_dataset(
     if dest == '':
         ctx.fail('--dest output filename or directory must not be an empty string')
 
-    num_files, input_iter = open_dataset(source, force_channels, max_images=max_images)
+    num_files, input_iter = open_dataset(source, force_channels, max_images=max_images,convert_channels=convert_channels)
     archive_root_dir, save_bytes, close_dest = open_dest(dest)
 
     if resolution is None: resolution = (None, None)
