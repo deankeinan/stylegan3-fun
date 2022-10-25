@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "stylegan3-fun"
+version = "0.1.0"
+description = ""
+authors = ["Dean Keinan <dean.keinan@carta.com>"]
+readme = "README.md"
+packages = [{include = "stylegan3_fun"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+Pillow = "^9.2.0"
+click = "^8.1.3"
+numpy = "^1.23.4"
+tqdm = "^4.64.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
